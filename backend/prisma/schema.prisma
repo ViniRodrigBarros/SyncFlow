@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Empresa {
+  id        Int       @id @default(autoincrement())
+  nome      String    @db.VarChar(255)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  usuarios  Usuario[]
+  registros Registro[]
+
+  @@map("empresa")
+}
+
+model Usuario {
+  id        Int       @id @default(autoincrement())
+  nome      String    @db.VarChar(255)
+  login     String    @unique @db.VarChar(120)
+  senha     String    @db.VarChar(255)
+  empresaId Int       @map("empresa_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  empresa   Empresa    @relation(fields: [empresaId], references: [id])
+  registros Registro[]
+
+  @@index([empresaId])
+  @@map("usuario")
+}
+
+enum TipoRegistro {
+  COMPRA
+  VENDA
+}
+
+model Registro {
+  id         String       @id @db.VarChar(36)
+  empresaId  Int          @map("empresa_id")
+  usuarioId  Int          @map("usuario_id")
+  tipo       TipoRegistro
+  dataHora   DateTime     @map("data_hora")
+  descricao  String       @db.Text
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+  deletedAt  DateTime?    @map("deleted_at")
+
+  empresa Empresa @relation(fields: [empresaId], references: [id])
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+  fotos   FotoRegistro[]
+
+  @@index([empresaId])
+  @@index([usuarioId])
+  @@index([updatedAt])
+  @@map("registro")
+}
+
+model FotoRegistro {
+  id         String    @id @db.VarChar(36)
+  registroId String    @map("registro_id") @db.VarChar(36)
+  caminho    String    @db.VarChar(500)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  registro Registro @relation(fields: [registroId], references: [id], onDelete: Cascade)
+
+  @@index([registroId])
+  @@index([updatedAt])
+  @@map("foto_registro")
+}
