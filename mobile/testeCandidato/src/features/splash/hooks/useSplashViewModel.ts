@@ -17,6 +17,8 @@ const MIN_SPLASH_MS = 600;
 export interface SplashViewModel {
   isLoading: boolean;
   appName: string;
+  preparingMessage: string;
+  versionLabel: string;
 }
 
 /**
@@ -83,5 +85,7 @@ export const useSplashViewModel = (): SplashViewModel => {
   return {
     isLoading,
     appName: 'SyncFlow',
+    preparingMessage: 'Preparando sua experiência…',
+    versionLabel: 'v1.0.0',
   };
 };
