@@ -1,5 +1,10 @@
 import { httpClient, AppError } from '../../../api';
-import { setAuthSession, clearAuthSession } from '../../services/AuthTokenStore';
+import {
+  clearAuthSession,
+  getAuthToken,
+  setAuthSession,
+  useAuthTokenStore,
+} from '../../services/AuthTokenStore';
 import { logger } from '../../../utils/logger';
 import type {
   Credentials,
@@ -13,6 +18,12 @@ import {
   type LoginResponseDto,
   type UsuarioDto,
 } from '../../data/dtos/authDto';
+
+export type RefreshOutcome =
+  | { status: 'refreshed'; user: AuthenticatedUser }
+  | { status: 'no-session' }
+  | { status: 'offline' }
+  | { status: 'expired' };
 
 /**
  * AuthRepository é a única porta de entrada para chamadas de autenticação.
@@ -35,10 +46,6 @@ export class AuthRepository {
         AUTH_ROUTES.signIn,
         payload,
       );
-      logger.debug('AuthRepository.signIn ← response', {
-        status: response.status,
-      });
-
       const result = AuthMapper.loginToDomain(response.data);
       await setAuthSession(result.token, result.user);
       return result;
@@ -65,6 +72,37 @@ export class AuthRepository {
         message: appError.message,
       });
       throw appError;
+    }
+  }
+
+  /**
+   * Tenta renovar a sessão consultando /auth/me.
+   *  - Se não há token persistido, devolve `no-session`.
+   *  - Se for offline/timeout, devolve `offline` e mantém a sessão local.
+   *  - Se o backend recusar (401/403), limpa a sessão e devolve `expired`.
+   *  - Se sucesso, atualiza nome/empresa do usuário no AsyncStorage.
+   *
+   * Nunca lança — pensado para ser chamado em background pela Splash/Home.
+   */
+  async refreshSession(): Promise<RefreshOutcome> {
+    const token = getAuthToken();
+    if (!token) return { status: 'no-session' };
+
+    try {
+      const user = await this.fetchMe();
+      await useAuthTokenStore.getState().setSession(token, user);
+      return { status: 'refreshed', user };
+    } catch (error) {
+      const appError = AppError.from(error);
+      if (appError.kind === 'unauthorized' || appError.kind === 'forbidden') {
+        logger.warn('refreshSession: token expirado, limpando sessão');
+        await clearAuthSession();
+        return { status: 'expired' };
+      }
+      logger.info('refreshSession: sem rede, mantendo sessão local', {
+        kind: appError.kind,
+      });
+      return { status: 'offline' };
     }
   }
 

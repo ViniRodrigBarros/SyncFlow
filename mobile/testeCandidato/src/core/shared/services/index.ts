@@ -7,4 +7,9 @@ export {
   setAuthSession,
   clearAuthSession,
 } from './AuthTokenStore';
+export {
+  useNetworkStore,
+  initNetworkObserver,
+  isOnlineNow,
+} from './NetworkStore';
 export { AsyncStorageManager, asyncStorageManager } from './storage';
