@@ -1,94 +1,75 @@
 import { httpClient, AppError } from '../../../api';
-import { setAuthToken } from '../../services/AuthTokenStore';
+import { setAuthSession, clearAuthSession } from '../../services/AuthTokenStore';
 import { logger } from '../../../utils/logger';
 import type {
   Credentials,
   LoginResult,
-  RegisterInput,
-  RegisterResult,
+  AuthenticatedUser,
 } from '../../data/entities/authEntities';
 import {
   AUTH_ROUTES,
-  buildAuthUrl,
   AuthMapper,
   type LoginRequestDto,
   type LoginResponseDto,
-  type RegisterRequestDto,
-  type RegisterResponseDto,
+  type UsuarioDto,
 } from '../../data/dtos/authDto';
 
+/**
+ * AuthRepository é a única porta de entrada para chamadas de autenticação.
+ * Camadas superiores (ViewModels) usam ele para login, recuperação de sessão
+ * e logout — sem precisar conhecer DTOs, axios ou AsyncStorage.
+ */
 export class AuthRepository {
   async signIn(input: Credentials): Promise<LoginResult> {
     const payload: LoginRequestDto = {
-      identificador: input.email,
+      login: input.login,
       senha: input.password,
     };
-    const url = buildAuthUrl(AUTH_ROUTES.signIn);
     logger.debug('AuthRepository.signIn → request', {
-      url,
-      payload: { identificador: payload.identificador, senha: '***' },
+      url: AUTH_ROUTES.signIn,
+      payload: { login: payload.login, senha: '***' },
     });
 
     try {
-      const response = await httpClient.post<LoginResponseDto>(url, payload);
+      const response = await httpClient.post<LoginResponseDto>(
+        AUTH_ROUTES.signIn,
+        payload,
+      );
       logger.debug('AuthRepository.signIn ← response', {
         status: response.status,
-        data: response.data,
       });
 
-      setAuthToken(response.data.access_token);
-      return AuthMapper.loginToDomain(response.data);
+      const result = AuthMapper.loginToDomain(response.data);
+      await setAuthSession(result.token, result.user);
+      return result;
     } catch (error) {
       const appError = AppError.from(error);
-      const cause = appError.cause as
-        | { response?: { status?: number; data?: unknown }; config?: { url?: string } }
-        | undefined;
       logger.error('AuthRepository.signIn ✖ error', {
         kind: appError.kind,
         status: appError.status,
         message: appError.message,
-        responseBody: cause?.response?.data,
-        url: cause?.config?.url,
       });
       throw appError;
     }
   }
 
-  async register(input: RegisterInput): Promise<RegisterResult> {
-    const payload: RegisterRequestDto = {
-      nome: input.name,
-      email: input.email,
-      senha: input.password,
-    };
-    const url = buildAuthUrl(AUTH_ROUTES.register);
-    logger.debug('AuthRepository.register → request', {
-      url,
-      payload: { nome: payload.nome, email: payload.email, senha: '***' },
-    });
-
+  async fetchMe(): Promise<AuthenticatedUser> {
     try {
-      const response = await httpClient.post<RegisterResponseDto>(url, payload);
-      logger.debug('AuthRepository.register ← response', {
-        status: response.status,
-        data: response.data,
-      });
-
-      if (response.data.access_token) setAuthToken(response.data.access_token);
-      return AuthMapper.registerToDomain(response.data);
+      const response = await httpClient.get<UsuarioDto>(AUTH_ROUTES.me);
+      return AuthMapper.userToDomain(response.data);
     } catch (error) {
       const appError = AppError.from(error);
-      const cause = appError.cause as
-        | { response?: { status?: number; data?: unknown }; config?: { url?: string } }
-        | undefined;
-      logger.error('AuthRepository.register ✖ error', {
+      logger.error('AuthRepository.fetchMe ✖ error', {
         kind: appError.kind,
         status: appError.status,
         message: appError.message,
-        responseBody: cause?.response?.data,
-        url: cause?.config?.url,
       });
       throw appError;
     }
+  }
+
+  async signOut(): Promise<void> {
+    await clearAuthSession();
   }
 }
 

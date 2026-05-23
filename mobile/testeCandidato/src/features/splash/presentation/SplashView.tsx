@@ -1,10 +1,8 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-
 import { useTheme } from '../../../core/theme';
 import { useSplashViewModel } from '../hooks/useSplashViewModel';
 import { SplashBrand } from './components';
-import { SplashViewModel } from '../hooks/useSplashViewModel';
 
 export const SplashView = () => {
   const theme = useTheme();
@@ -21,7 +19,7 @@ export const SplashView = () => {
       {isLoading && (
         <ActivityIndicator
           style={{ marginTop: theme.spacing.xl }}
-          size="large"
+          size="small"
           color={theme.colors.primary}
         />
       )}

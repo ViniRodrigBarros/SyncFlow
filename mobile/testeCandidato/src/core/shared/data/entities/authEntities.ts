@@ -1,26 +1,27 @@
+/**
+ * Domain entities for the auth feature. Repositories return these; the
+ * presentation layer never sees DTOs.
+ */
+
 export interface Credentials {
-  email: string;
+  login: string;
   password: string;
 }
 
-export interface RegisterInput {
+export interface Empresa {
+  id: number;
   name: string;
-  email: string;
-  password: string;
 }
 
 export interface AuthenticatedUser {
-  id: string;
+  id: number;
   name: string;
-  email: string;
+  login: string;
+  empresaId: number;
+  empresa: Empresa;
 }
 
 export interface LoginResult {
   user: AuthenticatedUser;
   token: string;
-}
-
-export interface RegisterResult {
-  user: AuthenticatedUser;
-  token: string | null;
 }

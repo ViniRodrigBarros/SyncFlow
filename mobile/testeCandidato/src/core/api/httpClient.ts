@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosInstance } from 'axios';
 
 import { env } from '../config/env';
 import { getAuthToken } from '../shared/services/AuthTokenStore';
@@ -35,24 +35,32 @@ const buildClient = (): AxiosInstance => {
     },
   });
 
-  // Request interceptor: this is where auth tokens, telemetry headers, locale
-  // and tracing IDs would be attached. Keeping it as a single hook means the
-  // rest of the app stays unaware of cross-cutting concerns.
+  client.interceptors.request.use(config => {
+    const token = getAuthToken();
+    if (token) {
+      config.headers.set('Authorization', `Bearer ${token}`);
+    }
+    return config;
+  });
+
   // Response interceptor: normalize every failure into an AppError so callers
   // never have to deal with Axios specifics.
   client.interceptors.response.use(
     response => response,
     (error: AxiosError) => {
       if (error.code === 'ECONNABORTED') {
-        return Promise.reject(new AppError('timeout', 'Request timed out', undefined, error));
+        return Promise.reject(new AppError('timeout', 'Tempo de requisição esgotado', undefined, error));
       }
       if (!error.response) {
-        return Promise.reject(new AppError('network', 'Network unavailable', undefined, error));
+        return Promise.reject(new AppError('network', 'Sem conexão com o servidor', undefined, error));
       }
       const status = error.response.status;
       const kind = mapStatusToKind(status);
-      const data = error.response.data as { message?: string } | undefined;
-      const message = data?.message ?? error.message ?? 'Request failed';
+      const data = error.response.data as { message?: string | string[] } | undefined;
+      const rawMessage = data?.message;
+      const message = Array.isArray(rawMessage)
+        ? rawMessage.join('; ')
+        : rawMessage ?? error.message ?? 'Falha na requisição';
       return Promise.reject(new AppError(kind, message, status, error));
     },
   );

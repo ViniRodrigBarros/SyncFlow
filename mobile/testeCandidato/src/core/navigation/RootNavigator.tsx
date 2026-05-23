@@ -2,6 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AuthScreen } from '../../features/auth';
+import { HomeScreen } from '../../features/home';
 import { SplashScreen } from '../../features/splash';
 import { useTheme, type Theme } from '../theme';
 import { Routes } from './routes';
@@ -28,6 +29,11 @@ function RootStack({ theme }: { theme: Theme }) {
       <Stack.Screen
         name={Routes.Auth}
         component={AuthScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={Routes.Home}
+        component={HomeScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

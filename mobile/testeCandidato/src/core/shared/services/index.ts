@@ -4,6 +4,7 @@ export { useThemeStore, type ThemeMode } from './ThemeStore';
 export {
   useAuthTokenStore,
   getAuthToken,
-  setAuthToken,
+  setAuthSession,
+  clearAuthSession,
 } from './AuthTokenStore';
 export { AsyncStorageManager, asyncStorageManager } from './storage';

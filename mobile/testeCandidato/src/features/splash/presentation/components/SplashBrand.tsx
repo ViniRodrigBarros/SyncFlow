@@ -11,12 +11,31 @@ export const SplashBrand = ({ appName }: SplashBrandProps) => {
 
   return (
     <View style={styles.container}>
+      <View
+        style={[
+          styles.logoMark,
+          {
+            backgroundColor: theme.colors.primary,
+            borderRadius: theme.radius.lg,
+          },
+        ]}
+      >
+        <Text
+          style={[
+            styles.logoLetter,
+            { color: theme.colors.textInverse },
+          ]}
+        >
+          T
+        </Text>
+      </View>
       <Text
         style={[
           styles.title,
           {
-            color: theme.colors.primary,
-            fontSize: theme.typography.size.display,
+            color: theme.colors.textPrimary,
+            fontSize: theme.typography.size.xxl,
+            marginTop: theme.spacing.lg,
           },
         ]}
       >
@@ -27,26 +46,29 @@ export const SplashBrand = ({ appName }: SplashBrandProps) => {
           styles.subtitle,
           {
             color: theme.colors.textSecondary,
-            fontSize: theme.typography.size.md,
-            marginTop: theme.spacing.sm,
+            fontSize: theme.typography.size.sm,
+            marginTop: theme.spacing.xs,
           },
         ]}
       >
-        Conectando o São João
+        Sync · Offline-first
       </Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  container: { alignItems: 'center' },
+  logoMark: {
+    width: 72,
+    height: 72,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  title: {
-    fontWeight: '700',
-    textAlign: 'center',
+  logoLetter: {
+    fontSize: 36,
+    fontWeight: '800',
   },
-  subtitle: {
-    textAlign: 'center',
-  },
+  title: { fontWeight: '700', textAlign: 'center' },
+  subtitle: { textAlign: 'center', letterSpacing: 0.5 },
 });
