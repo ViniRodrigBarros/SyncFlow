@@ -1,6 +1,7 @@
 import { Database } from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 
+import { migrations } from './migrations';
 import { Empresa, FotoRegistro, Registro, Usuario } from './models';
 import { mySchema } from './schema';
 
@@ -16,6 +17,7 @@ import { mySchema } from './schema';
  */
 const adapter = new SQLiteAdapter({
   schema: mySchema,
+  migrations,
   dbName: 'syncflow.db',
   jsi: true,
   onSetUpError: error => {
