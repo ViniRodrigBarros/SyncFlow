@@ -13,6 +13,7 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
+import { unlink } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 import { FotosService } from './fotos.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -66,34 +67,51 @@ export class FotosController {
       throw new BadRequestException('Nenhum arquivo enviado');
     }
 
-    let ids: string[] = [];
-    if (Array.isArray(body.ids)) ids = body.ids;
-    else if (typeof body.ids === 'string') {
-      try {
-        const parsed = JSON.parse(body.ids);
-        ids = Array.isArray(parsed) ? parsed : [body.ids];
-      } catch {
-        ids = [body.ids];
-      }
-    }
+    try {
+      const ids = this.parseIds(body.ids);
 
-    const result = [];
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const caminho = `/uploads/${file.filename}`;
-      const foto = await this.fotos.addFoto(
-        registroId,
-        caminho,
-        user,
-        ids[i],
-      );
-      result.push(foto);
+      const result = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const caminho = `/uploads/${file.filename}`;
+        const foto = await this.fotos.addFoto(
+          registroId,
+          caminho,
+          user,
+          ids[i],
+        );
+        result.push(foto);
+      }
+      return result;
+    } catch (err) {
+      await this.cleanupFiles(files);
+      throw err;
     }
-    return result;
   }
 
   @Delete(':id')
   remove(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.fotos.remove(id, user);
+  }
+
+  private parseIds(raw: string | string[] | undefined): string[] {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [raw];
+    } catch {
+      return [raw];
+    }
+  }
+
+  private async cleanupFiles(files: Express.Multer.File[]) {
+    await Promise.all(
+      files.map((f) =>
+        unlink(f.path).catch(() => {
+          // best-effort cleanup
+        }),
+      ),
+    );
   }
 }

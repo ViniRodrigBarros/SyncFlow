@@ -1,0 +1,284 @@
+{
+  "info": {
+    "name": "Teste Candidato Aplicativo - Backend",
+    "description": "Collection da API NestJS (auth, empresas, registros, fotos, sync). Faça o login primeiro: o JWT é salvo automaticamente na variável {{token}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "registroId", "value": "", "type": "string" },
+    { "key": "fotoId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "POST /auth/login (alpha)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "if (json && json.token) {",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "  console.log('Token salvo em {{token}}');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"alpha@teste.com\",\n  \"senha\": \"123456\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "POST /auth/login (beta)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.token) pm.collectionVariables.set('token', json.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"beta@teste.com\",\n  \"senha\": \"123456\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "GET /auth/me",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Empresas",
+      "item": [
+        {
+          "name": "GET /empresas/me",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/empresas/me", "host": ["{{baseUrl}}"], "path": ["empresas", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Registros",
+      "item": [
+        {
+          "name": "GET /registros",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/registros", "host": ["{{baseUrl}}"], "path": ["registros"] }
+          }
+        },
+        {
+          "name": "POST /registros",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.id) {",
+                  "  pm.collectionVariables.set('registroId', json.id);",
+                  "  console.log('registroId =', json.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"COMPRA\",\n  \"dataHora\": \"2026-05-22T12:00:00.000Z\",\n  \"descricao\": \"Compra de teste via Postman\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/registros", "host": ["{{baseUrl}}"], "path": ["registros"] }
+          }
+        },
+        {
+          "name": "GET /registros/:id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/registros/{{registroId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["registros", "{{registroId}}"]
+            }
+          }
+        },
+        {
+          "name": "PATCH /registros/:id",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descricao\": \"Descricao atualizada via Postman\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/registros/{{registroId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["registros", "{{registroId}}"]
+            }
+          }
+        },
+        {
+          "name": "DELETE /registros/:id",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/registros/{{registroId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["registros", "{{registroId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Fotos",
+      "item": [
+        {
+          "name": "GET /fotos/registro/:registroId",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/fotos/registro/{{registroId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["fotos", "registro", "{{registroId}}"]
+            }
+          }
+        },
+        {
+          "name": "POST /fotos/registro/:registroId (multipart)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (Array.isArray(json) && json[0] && json[0].id) {",
+                  "  pm.collectionVariables.set('fotoId', json[0].id);",
+                  "  console.log('fotoId =', json[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "fotos",
+                  "type": "file",
+                  "description": "Selecione uma ou mais imagens (jpg/png). Campo aceita múltiplos arquivos."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/fotos/registro/{{registroId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["fotos", "registro", "{{registroId}}"]
+            },
+            "description": "No Postman: selecione o arquivo no campo 'fotos'. Para enviar várias, adicione múltiplas linhas com a mesma key 'fotos'."
+          }
+        },
+        {
+          "name": "DELETE /fotos/:id",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/fotos/{{fotoId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["fotos", "{{fotoId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sync (WatermelonDB)",
+      "item": [
+        {
+          "name": "GET /sync/pull (inicial - sem timestamp)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/sync/pull",
+              "host": ["{{baseUrl}}"],
+              "path": ["sync", "pull"]
+            }
+          }
+        },
+        {
+          "name": "GET /sync/pull?lastPulledAt=…",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/sync/pull?lastPulledAt=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["sync", "pull"],
+              "query": [
+                { "key": "lastPulledAt", "value": "0", "description": "timestamp em ms; use 0 para puxar tudo" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /sync/push",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"changes\": {\n    \"registros\": {\n      \"created\": [\n        {\n          \"id\": \"11111111-1111-1111-1111-111111111111\",\n          \"tipo\": \"VENDA\",\n          \"data_hora\": \"2026-05-22T13:00:00.000Z\",\n          \"descricao\": \"Registro criado via sync push\"\n        }\n      ],\n      \"updated\": [],\n      \"deleted\": []\n    },\n    \"foto_registros\": {\n      \"created\": [],\n      \"updated\": [],\n      \"deleted\": []\n    }\n  },\n  \"lastPulledAt\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/sync/push",
+              "host": ["{{baseUrl}}"],
+              "path": ["sync", "push"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

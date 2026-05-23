@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthUser } from '../auth/current-user.decorator';
 import { TipoRegistro } from '@prisma/client';
@@ -130,55 +130,44 @@ export class SyncService {
   async push(body: PushBody, user: AuthUser) {
     const empresaId = user.empresaId;
     const usuarioId = user.id;
-    const changes = body.changes || {};
+    const changes = body?.changes || {};
 
     await this.prisma.$transaction(async (tx) => {
       const regChanges = changes.registros;
       if (regChanges) {
-        for (const r of regChanges.created || []) {
-          await tx.registro.upsert({
-            where: { id: r.id },
-            update: {
-              tipo: this.parseTipo(r.tipo),
-              dataHora: new Date(Number(r.data_hora)),
-              descricao: r.descricao,
-              deletedAt: null,
-            },
-            create: {
-              id: r.id,
-              empresaId,
-              usuarioId,
-              tipo: this.parseTipo(r.tipo),
-              dataHora: new Date(Number(r.data_hora)),
-              descricao: r.descricao,
-            },
-          });
-        }
-        for (const r of regChanges.updated || []) {
+        const upsertRegistro = async (r: any) => {
+          this.validateRegistroPayload(r);
+          const data = {
+            tipo: this.parseTipo(r.tipo),
+            dataHora: new Date(Number(r.data_hora)),
+            descricao: String(r.descricao),
+          };
           const existing = await tx.registro.findUnique({
             where: { id: r.id },
           });
-          if (!existing) {
-            await tx.registro.create({
-              data: {
-                id: r.id,
-                empresaId,
-                usuarioId,
-                tipo: this.parseTipo(r.tipo),
-                dataHora: new Date(Number(r.data_hora)),
-                descricao: r.descricao,
-              },
-            });
-          } else if (existing.empresaId === empresaId) {
+          if (existing) {
+            if (existing.empresaId !== empresaId) return;
             await tx.registro.update({
               where: { id: r.id },
+              data: { ...data, deletedAt: null },
+            });
+          } else {
+            await tx.registro.create({
               data: {
-                tipo: this.parseTipo(r.tipo),
-                dataHora: new Date(Number(r.data_hora)),
-                descricao: r.descricao,
+                id: String(r.id),
+                empresaId,
+                usuarioId,
+                ...data,
               },
             });
           }
+        };
+
+        for (const r of regChanges.created || []) {
+          await upsertRegistro(r);
+        }
+        for (const r of regChanges.updated || []) {
+          await upsertRegistro(r);
         }
         for (const id of regChanges.deleted || []) {
           const existing = await tx.registro.findUnique({ where: { id } });
@@ -193,51 +182,44 @@ export class SyncService {
 
       const fotoChanges = changes.foto_registros;
       if (fotoChanges) {
-        for (const f of fotoChanges.created || []) {
-          const reg = await tx.registro.findUnique({
-            where: { id: f.registro_id },
-          });
-          if (!reg || reg.empresaId !== empresaId) continue;
-          await tx.fotoRegistro.upsert({
-            where: { id: f.id },
-            update: {
-              caminho: f.caminho,
-              registroId: f.registro_id,
-              deletedAt: null,
-            },
-            create: {
-              id: f.id,
-              caminho: f.caminho,
-              registroId: f.registro_id,
-            },
-          });
-        }
-        for (const f of fotoChanges.updated || []) {
+        const upsertFoto = async (f: any) => {
+          if (!f?.id || !f?.registro_id || typeof f.caminho !== 'string') {
+            throw new BadRequestException(
+              'foto_registro requer id, registro_id e caminho',
+            );
+          }
           const existing = await tx.fotoRegistro.findUnique({
             where: { id: f.id },
           });
-          if (!existing) {
+          if (existing) {
+            const ownerReg = await tx.registro.findUnique({
+              where: { id: existing.registroId },
+            });
+            if (!ownerReg || ownerReg.empresaId !== empresaId) return;
+            await tx.fotoRegistro.update({
+              where: { id: f.id },
+              data: { caminho: f.caminho, deletedAt: null },
+            });
+          } else {
             const reg = await tx.registro.findUnique({
               where: { id: f.registro_id },
             });
-            if (!reg || reg.empresaId !== empresaId) continue;
+            if (!reg || reg.empresaId !== empresaId) return;
             await tx.fotoRegistro.create({
               data: {
-                id: f.id,
+                id: String(f.id),
                 caminho: f.caminho,
                 registroId: f.registro_id,
               },
             });
-          } else {
-            const reg = await tx.registro.findUnique({
-              where: { id: existing.registroId },
-            });
-            if (!reg || reg.empresaId !== empresaId) continue;
-            await tx.fotoRegistro.update({
-              where: { id: f.id },
-              data: { caminho: f.caminho },
-            });
           }
+        };
+
+        for (const f of fotoChanges.created || []) {
+          await upsertFoto(f);
+        }
+        for (const f of fotoChanges.updated || []) {
+          await upsertFoto(f);
         }
         for (const id of fotoChanges.deleted || []) {
           const existing = await tx.fotoRegistro.findUnique({ where: { id } });
@@ -257,9 +239,31 @@ export class SyncService {
     return { ok: true, timestamp: Date.now() };
   }
 
+  private validateRegistroPayload(r: any): void {
+    if (!r || typeof r !== 'object') {
+      throw new BadRequestException('registro inválido');
+    }
+    if (!r.id || typeof r.id !== 'string') {
+      throw new BadRequestException('registro.id é obrigatório');
+    }
+    if (r.tipo === undefined || r.tipo === null) {
+      throw new BadRequestException('registro.tipo é obrigatório');
+    }
+    if (r.data_hora === undefined || r.data_hora === null) {
+      throw new BadRequestException('registro.data_hora é obrigatório');
+    }
+    const d = new Date(Number(r.data_hora));
+    if (isNaN(d.getTime())) {
+      throw new BadRequestException('registro.data_hora inválido');
+    }
+    if (typeof r.descricao !== 'string' || r.descricao.length === 0) {
+      throw new BadRequestException('registro.descricao é obrigatório');
+    }
+  }
+
   private parseTipo(value: any): TipoRegistro {
     if (value === 'COMPRA' || value === 'compra') return TipoRegistro.COMPRA;
     if (value === 'VENDA' || value === 'venda') return TipoRegistro.VENDA;
-    throw new Error(`tipo inválido: ${value}`);
+    throw new BadRequestException(`tipo inválido: ${value}`);
   }
 }
