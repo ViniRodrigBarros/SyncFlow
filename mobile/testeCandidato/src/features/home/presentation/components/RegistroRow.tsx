@@ -1,108 +1,160 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { useTheme } from '../../../../core/theme';
 import type { RegistroListItem } from '../../hooks/useHomeViewModel';
 
 interface RegistroRowProps {
   item: RegistroListItem;
+  isLast?: boolean;
 }
 
-const formatDate = (ms: number): string => {
+const formatDateRelative = (ms: number): string => {
   if (!ms) return '—';
   const d = new Date(ms);
-  return d.toLocaleString('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const now = new Date();
+  const sameDay =
+    d.getDate() === now.getDate() &&
+    d.getMonth() === now.getMonth() &&
+    d.getFullYear() === now.getFullYear();
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday =
+    d.getDate() === yesterday.getDate() &&
+    d.getMonth() === yesterday.getMonth() &&
+    d.getFullYear() === yesterday.getFullYear();
+
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+
+  if (sameDay) return `Hoje, ${hh}:${mm}`;
+  if (isYesterday) return `Ontem, ${hh}:${mm}`;
+
+  const months = [
+    'Jan',
+    'Fev',
+    'Mar',
+    'Abr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Set',
+    'Out',
+    'Nov',
+    'Dez',
+  ];
+  return `${d.getDate()} ${months[d.getMonth()]}, ${hh}:${mm}`;
 };
 
-export const RegistroRow = ({ item }: RegistroRowProps) => {
-  const theme = useTheme();
-  const tipoColor =
-    item.tipo === 'COMPRA' ? theme.colors.primary : theme.colors.secondary;
+interface StatusBadge {
+  label: string;
+  fg: string;
+  bg: string;
+  border: string;
+  icon: keyof typeof MaterialIcons.glyphMap;
+}
+
+const statusOf = (item: RegistroListItem): StatusBadge => {
+  if (item.hasError)
+    return {
+      label: 'Erro',
+      fg: '#BA1A1A',
+      bg: 'rgba(186, 26, 26, 0.08)',
+      border: 'rgba(186, 26, 26, 0.20)',
+      icon: 'error-outline',
+    };
+  if (item.isPending)
+    return {
+      label: 'Pendente',
+      fg: '#93000A',
+      bg: 'rgba(255, 218, 214, 0.5)',
+      border: 'rgba(186, 26, 26, 0.15)',
+      icon: 'schedule',
+    };
+  return {
+    label: 'Sincronizado',
+    fg: '#009668',
+    bg: 'rgba(111, 251, 190, 0.10)',
+    border: 'rgba(0, 150, 104, 0.20)',
+    icon: 'check-circle',
+  };
+};
+
+export const RegistroRow = ({ item, isLast }: RegistroRowProps) => {
+  const tipoIcon: keyof typeof MaterialIcons.glyphMap =
+    item.tipo === 'COMPRA' ? 'shopping-bag' : 'receipt-long';
+  const badge = statusOf(item);
 
   return (
-    <View
-      style={[
-        styles.row,
-        {
-          backgroundColor: theme.colors.surface,
-          borderRadius: theme.radius.md,
-          padding: theme.spacing.lg,
-          marginBottom: theme.spacing.md,
-        },
-      ]}
-    >
-      <View
-        style={[
-          styles.tipoBadge,
-          {
-            backgroundColor: tipoColor + '1A',
-            borderRadius: theme.radius.sm,
-            paddingHorizontal: theme.spacing.sm,
-            paddingVertical: theme.spacing.xs,
-            marginBottom: theme.spacing.xs,
-          },
-        ]}
-      >
-        <Text
-          style={[
-            styles.tipoText,
-            { color: tipoColor, fontSize: theme.typography.size.xs },
-          ]}
-        >
-          {item.tipo}
+    <View style={[styles.row, isLast ? styles.rowLast : null]}>
+      <View style={styles.iconCircle}>
+        <MaterialIcons name={tipoIcon} size={16} color="#0F172A" />
+      </View>
+      <View style={styles.body}>
+        <Text style={styles.date}>{formatDateRelative(item.dataHora)}</Text>
+        <Text style={styles.desc} numberOfLines={1}>
+          {item.descricao || (item.tipo === 'COMPRA' ? 'Compra' : 'Venda')}
         </Text>
       </View>
-      <Text
+      <View
         style={[
-          styles.descricao,
-          {
-            color: theme.colors.textPrimary,
-            fontSize: theme.typography.size.md,
-          },
+          styles.badge,
+          { backgroundColor: badge.bg, borderColor: badge.border },
         ]}
-        numberOfLines={2}
       >
-        {item.descricao || 'Sem descrição'}
-      </Text>
-      <View style={[styles.meta, { marginTop: theme.spacing.xs }]}>
-        <Text
-          style={[
-            styles.metaText,
-            {
-              color: theme.colors.textSecondary,
-              fontSize: theme.typography.size.xs,
-            },
-          ]}
-        >
-          {formatDate(item.dataHora)}
+        <MaterialIcons name={badge.icon} size={12} color={badge.fg} />
+        <Text style={[styles.badgeLabel, { color: badge.fg }]}>
+          {badge.label}
         </Text>
-        {item.isPending && (
-          <Text
-            style={[
-              styles.metaText,
-              {
-                color: theme.colors.warning,
-                fontSize: theme.typography.size.xs,
-              },
-            ]}
-          >
-            • Pendente
-          </Text>
-        )}
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  row: { borderWidth: 1, borderColor: 'transparent' },
-  tipoBadge: { alignSelf: 'flex-start' },
-  tipoText: { fontWeight: '700', letterSpacing: 0.5 },
-  descricao: { fontWeight: '500' },
-  meta: { flexDirection: 'row', gap: 8 },
-  metaText: { fontWeight: '500' },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    gap: 12,
+  },
+  rowLast: { borderBottomWidth: 0 },
+  iconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#EFF1F3',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  body: { flex: 1 },
+  date: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '500',
+    color: '#0F172A',
+  },
+  desc: {
+    fontSize: 12,
+    lineHeight: 16,
+    color: '#45464D',
+    marginTop: 2,
+  },
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  badgeLabel: {
+    fontSize: 11,
+    lineHeight: 16,
+    fontWeight: '600',
+  },
 });

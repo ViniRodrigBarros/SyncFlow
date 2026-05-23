@@ -10,7 +10,7 @@ export const lightPalette = {
   primary: '#3B82F6',
   primaryDark: '#1D4ED8',
   primaryLight: '#DBEAFE',
-  secondary: '#8B5CF6',
+  secondary: '#712AE2',
   background: '#F9FAFB',
   surface: '#FFFFFF',
   textPrimary: '#111827',

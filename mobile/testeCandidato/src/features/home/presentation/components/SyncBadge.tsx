@@ -1,6 +1,6 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { useTheme } from '../../../../core/theme';
 import type { SyncStatus } from '../../../sync';
 
 interface SyncBadgeProps {
@@ -12,90 +12,83 @@ interface BadgeConfig {
   label: string;
   bg: string;
   fg: string;
+  border: string;
+  icon: keyof typeof MaterialIcons.glyphMap;
+  spin?: boolean;
 }
 
-export const SyncBadge = ({ status, isOnline }: SyncBadgeProps) => {
-  const theme = useTheme();
+const CONFIGS: Record<string, BadgeConfig> = {
+  syncing: {
+    label: 'Sincronizando',
+    bg: 'rgba(124, 58, 237, 0.08)',
+    fg: '#5B21B6',
+    border: 'rgba(124, 58, 237, 0.20)',
+    icon: 'sync',
+    spin: true,
+  },
+  success: {
+    label: 'Sincronizado',
+    bg: 'rgba(0, 150, 104, 0.10)',
+    fg: '#009668',
+    border: 'rgba(0, 150, 104, 0.25)',
+    icon: 'cloud-done',
+  },
+  error: {
+    label: 'Erro de sync',
+    bg: 'rgba(186, 26, 26, 0.08)',
+    fg: '#BA1A1A',
+    border: 'rgba(186, 26, 26, 0.25)',
+    icon: 'cloud-off',
+  },
+  offline: {
+    label: 'Offline',
+    bg: 'rgba(100, 116, 139, 0.10)',
+    fg: '#64748B',
+    border: 'rgba(100, 116, 139, 0.25)',
+    icon: 'cloud-off',
+  },
+  unauthorized: {
+    label: 'Sessão expirada',
+    bg: 'rgba(186, 26, 26, 0.08)',
+    fg: '#BA1A1A',
+    border: 'rgba(186, 26, 26, 0.25)',
+    icon: 'error-outline',
+  },
+  idle: {
+    label: 'Pronto',
+    bg: 'rgba(100, 116, 139, 0.10)',
+    fg: '#64748B',
+    border: 'rgba(100, 116, 139, 0.25)',
+    icon: 'cloud-queue',
+  },
+};
 
-  const cfg = ((): BadgeConfig => {
-    if (!isOnline)
-      return {
-        label: 'Offline',
-        bg: theme.colors.textSecondary + '22',
-        fg: theme.colors.textSecondary,
-      };
-    switch (status) {
-      case 'syncing':
-        return {
-          label: 'Sincronizando…',
-          bg: theme.colors.primary + '1F',
-          fg: theme.colors.primary,
-        };
-      case 'success':
-        return {
-          label: 'Tudo sincronizado',
-          bg: theme.colors.success + '1F',
-          fg: theme.colors.success,
-        };
-      case 'error':
-        return {
-          label: 'Erro de sync',
-          bg: theme.colors.danger + '1F',
-          fg: theme.colors.danger,
-        };
-      case 'offline':
-        return {
-          label: 'Sem conexão',
-          bg: theme.colors.warning + '1F',
-          fg: theme.colors.warning,
-        };
-      case 'unauthorized':
-        return {
-          label: 'Sessão expirada',
-          bg: theme.colors.danger + '1F',
-          fg: theme.colors.danger,
-        };
-      default:
-        return {
-          label: 'Pronto',
-          bg: theme.colors.border,
-          fg: theme.colors.textSecondary,
-        };
-    }
-  })();
+export const SyncBadge = ({ status, isOnline }: SyncBadgeProps) => {
+  const cfg = !isOnline ? CONFIGS.offline : (CONFIGS[status] ?? CONFIGS.idle);
 
   return (
     <View
       style={[
         styles.pill,
-        {
-          backgroundColor: cfg.bg,
-          borderRadius: theme.radius.pill,
-          paddingHorizontal: theme.spacing.md,
-          paddingVertical: theme.spacing.xs,
-        },
+        { backgroundColor: cfg.bg, borderColor: cfg.border },
       ]}
     >
-      <View
-        style={[
-          styles.dot,
-          { backgroundColor: cfg.fg, marginRight: theme.spacing.xs },
-        ]}
-      />
-      <Text
-        style={[
-          styles.label,
-          { color: cfg.fg, fontSize: theme.typography.size.xs },
-        ]}
-      >
-        {cfg.label}
-      </Text>
+      <MaterialIcons name={cfg.icon} size={14} color={cfg.fg} />
+      <Text style={[styles.label, { color: cfg.fg }]}>{cfg.label}</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  pill: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start' },
-  dot: { width: 6, height: 6, borderRadius: 3 },
-  label: { fontWeight: '600', letterSpacing: 0.3 },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  label: { fontSize: 11, lineHeight: 16, fontWeight: '600', letterSpacing: 0.2 },
 });

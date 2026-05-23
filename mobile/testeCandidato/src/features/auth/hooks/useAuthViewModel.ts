@@ -5,11 +5,11 @@ import { useState } from 'react';
 import { useForm, type Control, type FieldErrors, type SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
 
-import { env } from '../../../core/config/env';
 import { Routes } from '../../../core/navigation/routes';
 import type { RootStackParamList } from '../../../core/navigation/types';
 import { AppError } from '../../../core/api';
 import { authRepository } from '../../../core/shared/repositories/auth';
+import { useAppStateStore } from '../../../core/shared/services';
 import { logger } from '../../../core/utils/logger';
 
 const loginSchema = z.object({
@@ -25,9 +25,7 @@ const loginSchema = z.object({
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
 export interface AuthViewModel {
-  title: string;
   subtitle: string;
-  apiHint: string;
   isSubmitting: boolean;
   submissionError: string | null;
   control: Control<LoginFormValues>;
@@ -63,22 +61,26 @@ export const useAuthViewModel = (): AuthViewModel => {
     } catch (error) {
       const appError = AppError.from(error);
       logger.warn('Login falhou', appError.message);
-      const friendly =
-        appError.kind === 'unauthorized'
-          ? 'Usuário ou senha inválidos.'
-          : appError.kind === 'network' || appError.kind === 'timeout'
-            ? 'Não foi possível conectar ao servidor. Verifique sua conexão.'
-            : appError.message || 'Falha ao entrar.';
-      setSubmissionError(friendly);
+      if (appError.kind === 'unauthorized') {
+        // Erro inline no campo de senha (igual ao design Stitch)
+        setSubmissionError('A senha inserida está incorreta. Tente novamente.');
+      } else if (appError.kind === 'network' || appError.kind === 'timeout') {
+        // Sem conexão → toast discreto, mantém o card limpo
+        useAppStateStore
+          .getState()
+          .showToast('Sem conexão — verifique sua internet.', 'error');
+      } else {
+        useAppStateStore
+          .getState()
+          .showToast(appError.message || 'Falha ao entrar.', 'error');
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return {
-    title: 'Entrar',
-    subtitle: 'Acesse com seu login da empresa para continuar',
-    apiHint: `Conectado a ${env.apiBaseUrl}`,
+    subtitle: 'Acesso seguro ao portal corporativo',
     isSubmitting,
     submissionError,
     control,

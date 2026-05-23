@@ -28,35 +28,34 @@ export const PrimaryButton = ({
       style={({ pressed }) => [
         styles.base,
         {
-          backgroundColor: theme.colors.primary,
-          opacity: isDisabled ? 0.5 : pressed ? 0.85 : 1,
-          borderRadius: theme.radius.sm,
-          paddingVertical: theme.spacing.md,
-          paddingHorizontal: theme.spacing.xl,
+          backgroundColor: theme.colors.secondary,
+          opacity: isDisabled ? 0.5 : 1,
+          transform: [{ scale: pressed && !isDisabled ? 0.98 : 1 }],
         },
         style,
       ]}
     >
       {loading ? (
-        <ActivityIndicator size="small" color={theme.colors.textInverse} />
+        <ActivityIndicator size="small" color="#FFFFFF" />
       ) : (
-        <Text
-          style={[
-            styles.label,
-            {
-              color: theme.colors.textInverse,
-              fontSize: theme.typography.size.md,
-            },
-          ]}
-        >
-          {label}
-        </Text>
+        <Text style={styles.label}>{label}</Text>
       )}
     </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
-  base: { alignItems: 'center', justifyContent: 'center' },
-  label: { fontWeight: '600' },
+  base: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+  },
+  label: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: 0.1,
+  },
 });
