@@ -2,7 +2,6 @@ import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '../../../core/theme';
-import { PrimaryButton } from '../../../core/shared/components';
 import { useHomeViewModel, type RegistroListItem } from '../hooks/useHomeViewModel';
 import { RegistroRow, SyncBadge } from './components';
 
@@ -73,9 +72,7 @@ export const HomeView = () => {
         </View>
 
         <View style={{ marginTop: theme.spacing.md }}>
-          <Pressable onPress={vm.syncNow} hitSlop={6}>
-            <SyncBadge status={vm.syncStatus} isOnline={vm.isOnline} />
-          </Pressable>
+          <SyncBadge status={vm.syncStatus} isOnline={vm.isOnline} />
         </View>
 
         {!vm.isOnline && (
@@ -139,31 +136,6 @@ export const HomeView = () => {
         }
       />
 
-      <View
-        style={{
-          paddingHorizontal: theme.spacing.xl,
-          paddingBottom: theme.spacing.lg,
-        }}
-      >
-        <PrimaryButton
-          label="Sincronizar agora"
-          onPress={vm.syncNow}
-          loading={vm.syncStatus === 'syncing'}
-          disabled={!vm.isOnline}
-        />
-        {vm.syncErrorMessage ? (
-          <Text
-            style={{
-              color: theme.colors.danger,
-              fontSize: theme.typography.size.xs,
-              marginTop: theme.spacing.xs,
-              textAlign: 'center',
-            }}
-          >
-            {vm.syncErrorMessage}
-          </Text>
-        ) : null}
-      </View>
     </SafeAreaView>
   );
 };
