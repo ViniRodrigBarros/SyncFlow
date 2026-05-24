@@ -6,6 +6,7 @@ import {
 import { AppError, httpClient } from '../../../api';
 import { database } from '../../../database';
 import { logger } from '../../../utils/logger';
+import { fotosRepository } from '../fotos';
 import {
   SYNC_ROUTES,
   type PullResponseDto,
@@ -17,6 +18,8 @@ export interface SyncStats {
   finishedAt: number;
   durationMs: number;
   hadPreviousData: boolean;
+  photosUploaded: number;
+  photosFailed: number;
 }
 
 /**
@@ -36,6 +39,10 @@ export class SyncRepository {
     const startedAt = Date.now();
     const hadPreviousData = await this.hasLocalData();
     logger.debug('SyncRepository.run iniciado', { hadPreviousData });
+
+    // 1ª fase: drena uploads de fotos local-only antes do sync de metadados,
+    // para que o `caminho` que vai no push já seja a URL do servidor.
+    const photoResult = await fotosRepository.drainPendingUploads();
 
     try {
       await synchronize({
@@ -69,6 +76,8 @@ export class SyncRepository {
         finishedAt,
         durationMs: finishedAt - startedAt,
         hadPreviousData,
+        photosUploaded: photoResult.uploaded,
+        photosFailed: photoResult.failed,
       };
       logger.debug('SyncRepository.run concluído', stats);
       return stats;

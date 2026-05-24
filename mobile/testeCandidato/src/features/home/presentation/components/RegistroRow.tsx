@@ -1,11 +1,12 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { RegistroListItem } from '../../hooks/useHomeViewModel';
 
 interface RegistroRowProps {
   item: RegistroListItem;
   isLast?: boolean;
+  onPress?: (id: string) => void;
 }
 
 const formatDateRelative = (ms: number): string => {
@@ -80,13 +81,21 @@ const statusOf = (item: RegistroListItem): StatusBadge => {
   };
 };
 
-export const RegistroRow = ({ item, isLast }: RegistroRowProps) => {
+export const RegistroRow = ({ item, isLast, onPress }: RegistroRowProps) => {
   const tipoIcon: keyof typeof MaterialIcons.glyphMap =
     item.tipo === 'COMPRA' ? 'shopping-bag' : 'receipt-long';
   const badge = statusOf(item);
 
   return (
-    <View style={[styles.row, isLast ? styles.rowLast : null]}>
+    <Pressable
+      onPress={onPress ? () => onPress(item.id) : undefined}
+      style={({ pressed }) => [
+        styles.row,
+        isLast ? styles.rowLast : null,
+        pressed && onPress ? styles.rowPressed : null,
+      ]}
+      accessibilityRole={onPress ? 'button' : undefined}
+    >
       <View style={styles.iconCircle}>
         <MaterialIcons name={tipoIcon} size={16} color="#0F172A" />
       </View>
@@ -107,7 +116,7 @@ export const RegistroRow = ({ item, isLast }: RegistroRowProps) => {
           {badge.label}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 };
 
@@ -122,6 +131,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   rowLast: { borderBottomWidth: 0 },
+  rowPressed: { backgroundColor: 'rgba(15, 23, 42, 0.03)' },
   iconCircle: {
     width: 32,
     height: 32,

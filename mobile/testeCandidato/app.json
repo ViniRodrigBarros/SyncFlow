@@ -27,7 +27,8 @@
     },
     "plugins": [
       "expo-dev-client",
-      "@morrowdigital/watermelondb-expo-plugin"
+      "@morrowdigital/watermelondb-expo-plugin",
+      "@react-native-community/datetimepicker"
     ]
   }
 }

@@ -3,6 +3,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AuthScreen } from '../../features/auth';
 import { HomeScreen } from '../../features/home';
+import {
+  RegistroDetailScreen,
+  RegistroFormScreen,
+} from '../../features/registros';
 import { SplashScreen } from '../../features/splash';
 import { useTheme, type Theme } from '../theme';
 import { Routes } from './routes';
@@ -35,6 +39,23 @@ function RootStack({ theme }: { theme: Theme }) {
         name={Routes.Home}
         component={HomeScreen}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={Routes.RegistroForm}
+        component={RegistroFormScreen}
+        options={{
+          headerShown: false,
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
+      <Stack.Screen
+        name={Routes.RegistroDetail}
+        component={RegistroDetailScreen}
+        options={{
+          headerShown: false,
+          animation: 'slide_from_right',
+        }}
       />
     </Stack.Navigator>
   );

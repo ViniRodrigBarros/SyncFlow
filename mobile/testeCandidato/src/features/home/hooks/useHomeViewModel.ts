@@ -42,6 +42,7 @@ export interface HomeViewModel {
   signOut: () => Promise<void>;
   onAddPress: () => void;
   onSeeAllPress: () => void;
+  onRegistroPress: (id: string) => void;
 }
 
 interface RawRecord {
@@ -171,18 +172,21 @@ export const useHomeViewModel = (): HomeViewModel => {
   }, [navigation]);
 
   const onAddPress = useCallback(() => {
-    // Tela "Novo Registro" ainda não implementada — sinaliza ao usuário
-    // que o atalho existe, sem virar um botão morto silencioso.
-    useAppStateStore
-      .getState()
-      .showToast('Em breve: novo registro pelo aplicativo.', 'info');
-  }, []);
+    navigation.navigate(Routes.RegistroForm);
+  }, [navigation]);
 
   const onSeeAllPress = useCallback(() => {
     useAppStateStore
       .getState()
       .showToast('Em breve: lista completa de registros.', 'info');
   }, []);
+
+  const onRegistroPress = useCallback(
+    (id: string) => {
+      navigation.navigate(Routes.RegistroDetail, { id });
+    },
+    [navigation],
+  );
 
   return {
     userName: user?.name ?? null,
@@ -199,5 +203,6 @@ export const useHomeViewModel = (): HomeViewModel => {
     signOut,
     onAddPress,
     onSeeAllPress,
+    onRegistroPress,
   };
 };

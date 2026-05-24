@@ -171,6 +171,7 @@ export const HomeView = () => {
                 key={item.id}
                 item={item}
                 isLast={idx === arr.length - 1}
+                onPress={vm.onRegistroPress}
               />
             ))}
           </View>

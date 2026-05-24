@@ -4,6 +4,9 @@ export type RootStackParamList = {
   Splash: undefined;
   Auth: undefined;
   Home: undefined;
+  /** Sem `id` = criar novo registro. Com `id` = editar existente. */
+  RegistroForm: { id?: string } | undefined;
+  RegistroDetail: { id: string };
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
