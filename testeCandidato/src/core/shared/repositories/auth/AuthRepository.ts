@@ -1,4 +1,5 @@
 import { httpClient, AppError } from '../../../api';
+import { database } from '../../../database';
 import {
   clearAuthSession,
   getAuthToken,
@@ -107,6 +108,13 @@ export class AuthRepository {
   }
 
   async signOut(): Promise<void> {
+    try {
+      await database.write(async () => {
+        await database.unsafeResetDatabase();
+      });
+    } catch (error) {
+      logger.warn('AuthRepository.signOut: falha ao resetar banco local', error);
+    }
     await clearAuthSession();
   }
 }

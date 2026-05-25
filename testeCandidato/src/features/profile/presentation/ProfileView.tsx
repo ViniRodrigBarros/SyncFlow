@@ -93,18 +93,7 @@ export const ProfileView = () => {
         <SectionCard style={styles.sectionGap}>
           <Text style={styles.sectionTitle}>Preferences</Text>
           <View style={styles.sectionDivider} />
-          <SectionRow
-            icon={vm.darkMode ? 'dark-mode' : 'light-mode'}
-            title="Dark Mode"
-            subtitle="Switch between light and dark themes"
-            right={
-              <Toggle
-                value={vm.darkMode}
-                onValueChange={vm.onToggleDarkMode}
-                accessibilityLabel="Alternar dark mode"
-              />
-            }
-          />
+
           <SectionRow
             icon="language"
             title="Language"
@@ -199,13 +188,6 @@ export const ProfileView = () => {
       </ScrollView>
 
       <BottomTabBar active="profile" />
-
-      <LanguagePickerSheet
-        visible={languageSheetOpen}
-        selected={vm.language}
-        onClose={() => setLanguageSheetOpen(false)}
-        onSelect={vm.onPickLanguage}
-      />
     </SafeAreaView>
   );
 };
