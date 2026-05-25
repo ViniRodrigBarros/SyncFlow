@@ -40,11 +40,11 @@ export class SyncRepository {
     const hadPreviousData = await this.hasLocalData();
     logger.debug('SyncRepository.run iniciado', { hadPreviousData });
 
-    // 1ª fase: drena uploads de fotos local-only antes do sync de metadados,
-    // para que o `caminho` que vai no push já seja a URL do servidor.
-    const photoResult = await fotosRepository.drainPendingUploads();
-
     try {
+      // 1ª fase: sincroniza metadados. Isso garante que registros recém-criados
+      // offline existam no servidor antes de tentarmos anexar fotos a eles.
+      // O caminho da foto sobe como `file://...` (placeholder) — será sobrescrito
+      // na 2ª fase pelo upload do binário, que faz upsert idempotente no backend.
       await synchronize({
         database,
         pullChanges: async ({ lastPulledAt }) => {
@@ -69,6 +69,11 @@ export class SyncRepository {
         },
         migrationsEnabledAtVersion: 1,
       });
+
+      // 2ª fase: sobe binários das fotos ainda local-only. O endpoint
+      // /fotos/registro/:id faz upsert por (id), substituindo o caminho
+      // placeholder pela URL real do arquivo no servidor.
+      const photoResult = await fotosRepository.drainPendingUploads();
 
       const finishedAt = Date.now();
       const stats: SyncStats = {
