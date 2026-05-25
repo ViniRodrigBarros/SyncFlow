@@ -10,7 +10,7 @@ import {
   type RegistroEntity,
   type TipoRegistro,
 } from '../../../core/shared/repositories/registros';
-import { useAppStateStore } from '../../../core/shared/services';
+import { isOnlineNow, useAppStateStore } from '../../../core/shared/services';
 import { logger } from '../../../core/utils/logger';
 import { useSyncEngine } from '../../sync';
 import type { PickerFotoItem } from '../presentation/components';
@@ -182,6 +182,7 @@ export const useRegistroFormViewModel = (): RegistroFormViewModel => {
     setFormError(null);
     setSaving(true);
     try {
+      const online = isOnlineNow();
       if (isEditMode && editingId) {
         await registrosRepository.update({
           id: editingId,
@@ -191,9 +192,6 @@ export const useRegistroFormViewModel = (): RegistroFormViewModel => {
           fotosToAdd: newFotos.map(({ tempId: _t, ...rest }) => rest),
           fotosToRemove: removedFotoIds,
         });
-        useAppStateStore
-          .getState()
-          .showToast('Alterações salvas localmente', 'success');
       } else {
         await registrosRepository.create({
           tipo: state.tipo,
@@ -201,11 +199,19 @@ export const useRegistroFormViewModel = (): RegistroFormViewModel => {
           descricao: state.descricao.trim(),
           fotos: newFotos.map(({ tempId: _t, ...rest }) => rest),
         });
-        useAppStateStore
-          .getState()
-          .showToast('Salvo localmente', 'success');
       }
-      void sync.syncNow();
+      if (online) {
+        await sync.syncNow();
+        useAppStateStore.getState().showToast(
+          isEditMode ? 'Alterações salvas e sincronizadas' : 'Salvo e sincronizado com sucesso',
+          'success',
+        );
+      } else {
+        useAppStateStore.getState().showToast(
+          isEditMode ? 'Alterações salvas localmente' : 'Salvo localmente',
+          'success',
+        );
+      }
       navigation.goBack();
     } catch (error) {
       logger.error('Falha ao salvar registro', error);
@@ -230,10 +236,12 @@ export const useRegistroFormViewModel = (): RegistroFormViewModel => {
     setRemoving(true);
     try {
       await registrosRepository.remove(editingId);
-      useAppStateStore
-        .getState()
-        .showToast('Registro removido', 'info');
-      void sync.syncNow();
+      if (isOnlineNow()) {
+        await sync.syncNow();
+        useAppStateStore.getState().showToast('Registro removido e sincronizado', 'info');
+      } else {
+        useAppStateStore.getState().showToast('Registro removido', 'info');
+      }
       navigation.goBack();
     } catch (error) {
       logger.error('Falha ao remover registro', error);

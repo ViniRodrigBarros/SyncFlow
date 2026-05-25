@@ -115,7 +115,7 @@ export const useHomeViewModel = (): HomeViewModel => {
     const collection = database.get<Registro>('registros');
     const subscription = collection
       .query(Q.where('empresa_id', String(user.empresaId)))
-      .observeWithColumns(['tipo', 'data_hora', 'descricao'])
+      .observe()
       .subscribe((items: Registro[]) => {
         const mapped: RegistroListItem[] = items
           .map((r: Registro) => {
