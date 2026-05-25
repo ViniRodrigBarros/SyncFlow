@@ -212,7 +212,7 @@ export const useRegistroFormViewModel = (): RegistroFormViewModel => {
           'success',
         );
       }
-      navigation.goBack();
+      navigation.navigate(Routes.Home);
     } catch (error) {
       logger.error('Falha ao salvar registro', error);
       setFormError(

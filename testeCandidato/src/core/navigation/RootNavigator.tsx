@@ -7,6 +7,7 @@ import { ProfileScreen } from '../../features/profile';
 import {
   RegistroDetailScreen,
   RegistroFormScreen,
+  RegistroListScreen,
 } from '../../features/registros';
 import { SplashScreen } from '../../features/splash';
 import { useTheme, type Theme } from '../theme';
@@ -44,6 +45,14 @@ function RootStack({ theme }: { theme: Theme }) {
       <Stack.Screen
         name={Routes.Profile}
         component={ProfileScreen}
+        options={{
+          headerShown: false,
+          animation: 'slide_from_right',
+        }}
+      />
+      <Stack.Screen
+        name={Routes.RegistroList}
+        component={RegistroListScreen}
         options={{
           headerShown: false,
           animation: 'slide_from_right',

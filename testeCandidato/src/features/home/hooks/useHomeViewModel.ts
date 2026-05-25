@@ -115,7 +115,7 @@ export const useHomeViewModel = (): HomeViewModel => {
     const collection = database.get<Registro>('registros');
     const subscription = collection
       .query(Q.where('empresa_id', String(user.empresaId)))
-      .observe()
+      .observeWithColumns(['tipo', 'data_hora', 'descricao'])
       .subscribe((items: Registro[]) => {
         const mapped: RegistroListItem[] = items
           .map((r: Registro) => {
@@ -191,10 +191,8 @@ export const useHomeViewModel = (): HomeViewModel => {
   }, [navigation]);
 
   const onSeeAllPress = useCallback(() => {
-    useAppStateStore
-      .getState()
-      .showToast('Em breve: lista completa de registros.', 'info');
-  }, []);
+    navigation.navigate(Routes.RegistroList);
+  }, [navigation]);
 
   const onRegistroPress = useCallback(
     (id: string) => {

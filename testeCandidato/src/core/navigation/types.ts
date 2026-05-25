@@ -5,6 +5,8 @@ export type RootStackParamList = {
   Auth: undefined;
   Home: undefined;
   Profile: undefined;
+  /** Lista completa de registros com busca e filtro por status. */
+  RegistroList: undefined;
   /** Sem `id` = criar novo registro. Com `id` = editar existente. */
   RegistroForm: { id?: string } | undefined;
   RegistroDetail: { id: string };
