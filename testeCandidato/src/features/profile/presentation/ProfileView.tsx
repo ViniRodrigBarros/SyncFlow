@@ -90,33 +90,7 @@ export const ProfileView = () => {
         </SectionCard>
 
         {/* Preferences */}
-        <SectionCard style={styles.sectionGap}>
-          <Text style={styles.sectionTitle}>Preferences</Text>
-          <View style={styles.sectionDivider} />
-
-          <SectionRow
-            icon="language"
-            title="Language"
-            right={
-              <Pressable
-                onPress={() => setLanguageSheetOpen(true)}
-                style={({ pressed }) => [
-                  styles.languagePill,
-                  { opacity: pressed ? 0.7 : 1 },
-                ]}
-                accessibilityRole="button"
-              >
-                <Text style={styles.languagePillText}>{vm.languageLabel}</Text>
-                <MaterialIcons
-                  name="expand-more"
-                  size={18}
-                  color={COLORS.textPrimary}
-                />
-              </Pressable>
-            }
-            showDivider
-          />
-        </SectionCard>
+       
 
         {/* Data Synchronization */}
         <SectionCard style={styles.sectionGap}>
