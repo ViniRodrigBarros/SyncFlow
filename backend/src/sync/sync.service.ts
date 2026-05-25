@@ -152,12 +152,16 @@ export class SyncService {
               data: { ...data, deletedAt: null },
             });
           } else {
+            // Preserva o created_at do cliente para que o registro não volte
+            // como `created` na próxima pull (lastPulledAt do cliente é >= esse instante).
+            const clientCreatedAt = this.parseClientTimestamp(r.created_at);
             await tx.registro.create({
               data: {
                 id: String(r.id),
                 empresaId,
                 usuarioId,
                 ...data,
+                ...(clientCreatedAt ? { createdAt: clientCreatedAt, updatedAt: clientCreatedAt } : {}),
               },
             });
           }
@@ -205,11 +209,13 @@ export class SyncService {
               where: { id: f.registro_id },
             });
             if (!reg || reg.empresaId !== empresaId) return;
+            const clientCreatedAt = this.parseClientTimestamp(f.created_at);
             await tx.fotoRegistro.create({
               data: {
                 id: String(f.id),
                 caminho: f.caminho,
                 registroId: f.registro_id,
+                ...(clientCreatedAt ? { createdAt: clientCreatedAt, updatedAt: clientCreatedAt } : {}),
               },
             });
           }
@@ -259,6 +265,18 @@ export class SyncService {
     if (typeof r.descricao !== 'string' || r.descricao.length === 0) {
       throw new BadRequestException('registro.descricao é obrigatório');
     }
+  }
+
+  private parseClientTimestamp(value: unknown): Date | null {
+    if (value === undefined || value === null) return null;
+    const ms = Number(value);
+    if (!Number.isFinite(ms) || ms <= 0) return null;
+    const d = new Date(ms);
+    if (isNaN(d.getTime())) return null;
+    // Não aceita timestamps no futuro — cliente com relógio adiantado romperia
+    // a invariante "createdAt <= lastPulledAt" que faz o sync convergir.
+    if (d.getTime() > Date.now()) return null;
+    return d;
   }
 
   private parseTipo(value: any): TipoRegistro {

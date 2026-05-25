@@ -9,7 +9,7 @@ import { Routes } from '../../navigation/routes';
 import type { RootStackParamList } from '../../navigation/types';
 import { useAppStateStore } from '../services';
 
-export type BottomTab = 'home' | 'search' | 'profile';
+export type BottomTab = 'home' | 'profile';
 
 interface BottomTabBarProps {
   active: BottomTab;
@@ -23,7 +23,6 @@ interface TabConfig {
 
 const TABS: ReadonlyArray<TabConfig> = [
   { key: 'home', label: 'Home', icon: 'home' },
-  { key: 'search', label: 'Search', icon: 'search' },
   { key: 'profile', label: 'Profile', icon: 'person' },
 ];
 
@@ -34,15 +33,7 @@ const COLORS = {
   active: '#712AE2',
 };
 
-/**
- * Bottom navigation com 3 abas (Home, Search, Profile).
- *
- *  - Cada aba navega via Stack `navigate()`. Por ser native-stack, voltar para
- *    uma tela já no stack faz pop; abrir nova empilha. Bom o bastante para um
- *    fluxo de 2 abas reais (Home/Profile).
- *  - "Search" ainda não existe — exibimos um toast informativo.
- *  - Respeita o safe-area inset inferior (Android com gesture bar / iPhone).
- */
+
 export const BottomTabBar = ({ active }: BottomTabBarProps) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
