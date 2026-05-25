@@ -82,8 +82,6 @@ export const useProfileViewModel = (): ProfileViewModel => {
   const prevStatusRef = useRef<SyncStatus>(sync.status);
   useEffect(() => {
     if (prevStatusRef.current === 'syncing' && sync.status === 'success') {
-      const ts = sync.lastStats?.finishedAt ?? Date.now();
-      void useSyncMetaStore.getState().recordSyncSuccess(ts);
       useAppStateStore
         .getState()
         .showToast('Sincronização concluída.', 'success');

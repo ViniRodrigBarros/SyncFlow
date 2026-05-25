@@ -110,12 +110,20 @@ export const useHomeViewModel = (): HomeViewModel => {
   const [forceShowLocal, setForceShowLocal] = useState(false);
 
   // Observação reativa da tabela `registros` da empresa do usuário.
+  //
+  // Importante: `synchronize()` do WatermelonDB usa `markAsSynced` para flipar
+  // `_status: 'created'|'updated' → 'synced'` ao final de um push. Essa mudança
+  // NÃO dispara observables de query (é tratada como metadata interna). Por isso
+  // dependemos de `lastSyncedAt` do store global (atualizado por qualquer sync
+  // bem-sucedido, independente de quem chamou) — toda vez que um sync conclui o
+  // effect resubscreve e reemite o snapshot atual com `_status` correto.
+  const lastSyncedAt = useSyncMetaStore(s => s.lastSyncedAt);
   useEffect(() => {
     if (!user) return;
     const collection = database.get<Registro>('registros');
     const subscription = collection
       .query(Q.where('empresa_id', String(user.empresaId)))
-      .observeWithColumns(['tipo', 'data_hora', 'descricao'])
+      .observe()
       .subscribe((items: Registro[]) => {
         const mapped: RegistroListItem[] = items
           .map((r: Registro) => {
@@ -140,7 +148,7 @@ export const useHomeViewModel = (): HomeViewModel => {
         setStats({ compras, vendas, pendentes, sincronizados });
       });
     return () => subscription.unsubscribe();
-  }, [user]);
+  }, [user, lastSyncedAt]);
 
   // Toast quando o sync termina com sucesso após estar `syncing`.
   // O WatermelonDB não devolve a contagem de itens criados/atualizados em
@@ -160,12 +168,10 @@ export const useHomeViewModel = (): HomeViewModel => {
             : `${delta} registros sincronizados`;
         useAppStateStore.getState().showToast(message, 'success');
       }
-      const finishedAt = sync.lastStats?.finishedAt ?? Date.now();
-      void useSyncMetaStore.getState().recordSyncSuccess(finishedAt);
       setForceShowLocal(false);
     }
     previousStatusRef.current = sync.status;
-  }, [sync.status, stats.pendentes, sync.lastStats]);
+  }, [sync.status, stats.pendentes]);
 
   // Quando a rede volta, esconde o "ver local mesmo offline".
   useEffect(() => {

@@ -5,6 +5,7 @@ import { syncRepository, type SyncStats } from '../../../core/shared/repositorie
 import {
   isOnlineNow,
   useNetworkStore,
+  useSyncMetaStore,
 } from '../../../core/shared/services';
 import { logger } from '../../../core/utils/logger';
 
@@ -73,6 +74,10 @@ export const useSyncEngine = (options: UseSyncEngineOptions = {}): SyncEngine =>
       try {
         const stats = await syncRepository.run();
         setState({ status: 'success', errorMessage: null, lastStats: stats });
+        // Atualiza o store global — qualquer consumidor (Home, Profile) pode
+        // depender de `lastSyncedAt` para forçar refresh de dados que o sync
+        // alterou via `markAsSynced` (que não dispara observables do Watermelon).
+        void useSyncMetaStore.getState().recordSyncSuccess(stats.finishedAt);
       } catch (error) {
         const appError = AppError.from(error);
         if (appError.kind === 'unauthorized' || appError.kind === 'forbidden') {
