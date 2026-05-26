@@ -1,4 +1,4 @@
-# SyncFlow — Teste Candidato Aplicativo
+# SyncFlow
 
 **SyncFlow** é um aplicativo mobile de gestão de registros com suporte completo a operações **offline-first**. Construído com **React Native (Expo SDK 56)** no frontend e **NestJS + Prisma + MySQL** no backend, ele permite que equipes criem, editem e visualizem registros mesmo sem conexão com a internet — tudo sincroniza automaticamente em background assim que a rede é restabelecida.
 
