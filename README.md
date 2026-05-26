@@ -1,8 +1,14 @@
-# Teste Candidato Aplicativo — SyncFlow
+# SyncFlow — Teste Candidato Aplicativo
 
-App mobile **React Native (Expo SDK 56) + WatermelonDB** com sincronização offline contra backend **NestJS + Prisma + MySQL**.
+**SyncFlow** é um aplicativo mobile de gestão de registros com suporte completo a operações **offline-first**. Construído com **React Native (Expo SDK 56)** no frontend e **NestJS + Prisma + MySQL** no backend, ele permite que equipes criem, editem e visualizem registros mesmo sem conexão com a internet — tudo sincroniza automaticamente em background assim que a rede é restabelecida.
 
-Cada usuário logado vê e cria apenas registros da sua própria empresa. Tudo funciona offline e sincroniza em background quando há conexão.
+### Principais características
+
+- **Offline-first real**: dados são persistidos localmente via **WatermelonDB + SQLite** e sincronizados com o servidor usando o protocolo de sync delta do WatermelonDB (`/sync/pull` e `/sync/push`).
+- **Multi-tenant por empresa**: cada usuário autenticado acessa exclusivamente os dados da sua própria empresa — isolamento garantido em todas as camadas (JWT, backend e banco).
+- **Sincronização inteligente**: na primeira conexão baixa tudo; nas seguintes só o delta desde o último pull (`lastPulledAt`), mantendo a transferência mínima.
+- **Indicador de status de rede**: o app exibe em tempo real se está online ou offline, com sincronização manual disponível a qualquer momento.
+- **Upload de fotos**: registros suportam anexo de múltiplas fotos via upload multipart.
 
 ---
 
