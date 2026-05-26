@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useSplashViewModel } from '../hooks/useSplashViewModel';
 import { SplashBrand, SplashSpinner } from './components';
 
-// Splash é sempre dark (momento de marca) — não usa o tema do app.
+
 const BACKGROUND = '#131b2e';
 const GLOW_PRIMARY = '#7C3AED';
 const GLOW_SECONDARY = '#EADDFF';
@@ -18,8 +18,6 @@ export const SplashView = () => {
     <View style={styles.container}>
       <StatusBar style="light" />
 
-      {/* Glows ambientes simulando o gradiente do design (sem blur nativo
-          em RN, usamos círculos translúcidos sobrepostos). */}
       <View
         pointerEvents="none"
         style={[styles.glow, styles.glowTop, { backgroundColor: GLOW_PRIMARY }]}
