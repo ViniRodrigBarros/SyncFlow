@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 
-import type { NewFotoInput } from '../../../../core/shared/repositories/registros';
+import type { NewFotoInput } from '../../../../core/shared/repositories';
 
 interface FotoPickerProps {
   /** Fotos já anexadas em sessão atual + persistidas. */

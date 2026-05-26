@@ -15,7 +15,7 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ reset: mockNavigationReset }),
 }));
 
-jest.mock('../../../core/shared/repositories/auth', () => ({
+jest.mock('../../../core/shared/repositories', () => ({
   authRepository: {
     signIn: (...args: unknown[]) => mockSignIn(...args),
   },

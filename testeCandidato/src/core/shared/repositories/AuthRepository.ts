@@ -1,24 +1,24 @@
-import { httpClient, AppError } from '../../../api';
-import { database } from '../../../database';
+import { httpClient, AppError } from '../../api';
+import { database } from '../../database';
 import {
   clearAuthSession,
   getAuthToken,
   setAuthSession,
   useAuthTokenStore,
-} from '../../services/AuthTokenStore';
-import { logger } from '../../../utils/logger';
+} from '../services/AuthTokenStore';
+import { logger } from '../../utils/logger';
 import type {
   Credentials,
   LoginResult,
   AuthenticatedUser,
-} from '../../data/entities/authEntities';
+} from '../data/entities/authEntities';
 import {
   AUTH_ROUTES,
   AuthMapper,
   type LoginRequestDto,
   type LoginResponseDto,
   type UsuarioDto,
-} from '../../data/dtos/authDto';
+} from '../data/dtos/authDto';
 
 export type RefreshOutcome =
   | { status: 'refreshed'; user: AuthenticatedUser }

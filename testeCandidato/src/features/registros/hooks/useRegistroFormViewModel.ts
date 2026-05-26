@@ -9,7 +9,7 @@ import {
   type NewFotoInput,
   type RegistroEntity,
   type TipoRegistro,
-} from '../../../core/shared/repositories/registros';
+} from '../../../core/shared/repositories';
 import { isOnlineNow, useAppStateStore } from '../../../core/shared/services';
 import { logger } from '../../../core/utils/logger';
 import { useSyncEngine } from '../../sync';

@@ -7,7 +7,7 @@ import { Q } from '@nozbe/watermelondb';
 import { Routes } from '../../../core/navigation/routes';
 import type { RootStackParamList } from '../../../core/navigation/types';
 import { database, type Registro } from '../../../core/database';
-import { authRepository } from '../../../core/shared/repositories/auth';
+import { authRepository } from '../../../core/shared/repositories';
 import {
   useAppStateStore,
   useAuthTokenStore,

@@ -3,15 +3,15 @@ import {
   type SyncDatabaseChangeSet,
 } from '@nozbe/watermelondb/sync';
 
-import { AppError, httpClient } from '../../../api';
-import { database } from '../../../database';
-import { logger } from '../../../utils/logger';
-import { fotosRepository } from '../fotos';
+import { AppError, httpClient } from '../../api';
+import { database } from '../../database';
+import { logger } from '../../utils/logger';
+import { fotosRepository } from './FotosRepository';
 import {
   SYNC_ROUTES,
   type PullResponseDto,
   type PushBodyDto,
-} from '../../data/dtos/syncDto';
+} from '../data/dtos/syncDto';
 
 export interface SyncStats {
   startedAt: number;

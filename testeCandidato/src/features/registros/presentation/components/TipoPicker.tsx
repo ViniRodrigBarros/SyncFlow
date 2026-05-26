@@ -1,7 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { TipoRegistro } from '../../../../core/shared/repositories/registros';
+import type { TipoRegistro } from '../../../../core/shared/repositories';
 
 interface TipoPickerProps {
   value: TipoRegistro;

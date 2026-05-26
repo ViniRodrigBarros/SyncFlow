@@ -11,7 +11,7 @@ import type { RootStackParamList } from '../../../core/navigation/types';
 import {
   registrosRepository,
   type RegistroEntity,
-} from '../../../core/shared/repositories/registros';
+} from '../../../core/shared/repositories';
 import { useAppStateStore } from '../../../core/shared/services';
 import { logger } from '../../../core/utils/logger';
 import { useSyncEngine } from '../../sync';

@@ -1,9 +1,9 @@
 import { Q } from '@nozbe/watermelondb';
 
-import { AppError, httpClient } from '../../../api';
-import { database, FotoRegistro } from '../../../database';
-import { logger } from '../../../utils/logger';
-import { FOTOS_ROUTES, type FotoUploadResponseDto } from '../../data/dtos/fotoDto';
+import { AppError, httpClient } from '../../api';
+import { database, FotoRegistro } from '../../database';
+import { logger } from '../../utils/logger';
+import { FOTOS_ROUTES, type FotoUploadResponseDto } from '../data/dtos/fotoDto';
 
 export interface DrainPhotosResult {
   uploaded: number;

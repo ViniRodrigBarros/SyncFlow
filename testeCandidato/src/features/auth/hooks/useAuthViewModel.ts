@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { Routes } from '../../../core/navigation/routes';
 import type { RootStackParamList } from '../../../core/navigation/types';
 import { AppError } from '../../../core/api';
-import { authRepository } from '../../../core/shared/repositories/auth';
+import { authRepository } from '../../../core/shared/repositories';
 import { useAppStateStore } from '../../../core/shared/services';
 import { logger } from '../../../core/utils/logger';
 

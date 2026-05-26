@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { AppError } from '../../../core/api';
-import { syncRepository, type SyncStats } from '../../../core/shared/repositories/sync';
+import { syncRepository, type SyncStats } from '../../../core/shared/repositories';
 import {
   isOnlineNow,
   useNetworkStore,

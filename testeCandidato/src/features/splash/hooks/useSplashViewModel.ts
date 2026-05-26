@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { Routes } from '../../../core/navigation/routes';
 import type { RootStackParamList } from '../../../core/navigation/types';
-import { authRepository } from '../../../core/shared/repositories/auth';
+import { authRepository } from '../../../core/shared/repositories';
 import {
   initNetworkObserver,
   isOnlineNow,

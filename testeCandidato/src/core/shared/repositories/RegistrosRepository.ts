@@ -1,14 +1,14 @@
 import { Q } from '@nozbe/watermelondb';
 
-import { database, Registro, FotoRegistro } from '../../../database';
-import { logger } from '../../../utils/logger';
-import { useAuthTokenStore } from '../../services/AuthTokenStore';
+import { database, Registro, FotoRegistro } from '../../database';
+import { logger } from '../../utils/logger';
+import { useAuthTokenStore } from '../services/AuthTokenStore';
 import type {
   CreateRegistroInput,
   FotoEntity,
   RegistroEntity,
   UpdateRegistroInput,
-} from '../../data/entities/registroEntities';
+} from '../data/entities/registroEntities';
 
 interface RawRecord {
   _status?: 'created' | 'updated' | 'deleted' | 'synced';
