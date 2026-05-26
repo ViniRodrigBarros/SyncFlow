@@ -17,7 +17,7 @@
 ```
 TesteCadidatoAplicativo/
 ├── backend/                       # API REST NestJS + Prisma + MySQL
-└── mobile/testeCandidato/         # App React Native (Expo)
+└── mobile/        # App React Native (Expo)
 ```
 
 > **Nota Windows:** ao buildar o Android no Windows é comum estourar o limite de 260 caracteres em paths longos. Veja **[Setup Mobile (Android)](#3-mobile---android)** abaixo para a recomendação de copiar o projeto para um diretório curto (`D:\m`).
